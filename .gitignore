@@ -1,2 +1,8 @@
+# Build
+target/
 *.class
 *.log
+
+# IDE
+*.iml
+.idea/
