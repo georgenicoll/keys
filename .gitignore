@@ -2,6 +2,7 @@
 target/
 *.class
 *.log
+node_modules/
 
 # IDE
 *.iml
