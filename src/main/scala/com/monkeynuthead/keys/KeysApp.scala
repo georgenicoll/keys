@@ -2,19 +2,26 @@ package com.monkeynuthead.keys
 
 import org.scalajs.jquery.jQuery
 
-object App {
+object KeysApp {
+
+  val Body = "body"
+  val Click = "Click Me!"
+  val Clicked = "Clicked Keys!"
+  val Hello = "Hello, Keys!"
 
   def appendPar(selector: String, text: String): Unit = {
     jQuery(selector).append(s"<p>$text</p>")
   }
 
   def addClickedMessage(): Unit = {
-    appendPar("body", "Clicked Keys!")
+    appendPar(Body, Clicked)
   }
 
   def setupUI(): Unit = {
-    jQuery("#click-me-button").click(() => addClickedMessage())
-    appendPar("body", "Hello, Keys!")
+    jQuery(s"""<button type="button">$Click</button>""")
+      .click(addClickedMessage _)
+      .appendTo(jQuery(Body))
+    appendPar(Body, Hello)
   }
 
   def main(args: Array[String]): Unit = {
