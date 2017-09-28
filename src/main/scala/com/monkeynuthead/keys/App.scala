@@ -1,26 +1,24 @@
 package com.monkeynuthead.keys
 
-import org.scalajs.dom
-import org.scalajs.dom.document
-
-import scala.scalajs.js.annotation.JSExportTopLevel
+import org.scalajs.jquery.jQuery
 
 object App {
 
-  def appendPar(targetNode: dom.Node, text: String): Unit = {
-    val parNode = document.createElement("p")
-    val textNode = document.createTextNode(text)
-    parNode.appendChild(textNode)
-    targetNode.appendChild(parNode)
+  def appendPar(selector: String, text: String): Unit = {
+    jQuery(selector).append(s"<p>$text</p>")
   }
 
-  @JSExportTopLevel("addClickedMessage")
   def addClickedMessage(): Unit = {
-    appendPar(document.body, "Clicked Keys!")
+    appendPar("body", "Clicked Keys!")
+  }
+
+  def setupUI(): Unit = {
+    jQuery("#click-me-button").click(() => addClickedMessage())
+    appendPar("body", "Hello, Keys!")
   }
 
   def main(args: Array[String]): Unit = {
-    appendPar(document.body, "Hello, Keys!")
+    jQuery(() => setupUI())
   }
 
 }
