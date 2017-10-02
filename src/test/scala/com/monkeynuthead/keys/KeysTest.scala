@@ -1,6 +1,7 @@
 package com.monkeynuthead.keys
 
-import org.scalajs.jquery.jQuery
+import org.scalajs.dom
+import org.scalajs.dom.html
 import utest._
 
 object KeysTest extends TestSuite {
@@ -10,15 +11,15 @@ object KeysTest extends TestSuite {
 
   def tests = TestSuite {
     'HelloKeys {
-      assert(jQuery(s"p:contains('${KeysApp.Hello}')").length == 1)
+      assert(dom.document.querySelectorAll(s"p.${KeysApp.HelloClass}").length == 1)
     }
 
     'ButtonClick {
       def messageCount =
-        jQuery(s"p:contains('${KeysApp.Clicked}')").length
+        dom.document.querySelectorAll(s"p.${KeysApp.ClickedClass}").length
 
-      val button = jQuery(s"button:contains('${KeysApp.Click}')")
-      assert(button.length == 1)
+      val button = dom.document.querySelector(s"button#${KeysApp.ClickButtonId}").asInstanceOf[html.Button]
+      assert(button != null)
       assert(messageCount == 0)
 
       for (c <- 1 to 5) {
