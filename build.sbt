@@ -9,6 +9,8 @@ scalaJSUseMainModuleInitializer := true
 libraryDependencies ++= Seq(
   "org.scala-js" %%% "scalajs-dom" % "0.9.2",
   "com.lihaoyi" %%% "scalatags" % "0.6.2",
+  "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
+  "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
   "com.lihaoyi" %%% "utest" % "0.4.4" % "test"
 )
 

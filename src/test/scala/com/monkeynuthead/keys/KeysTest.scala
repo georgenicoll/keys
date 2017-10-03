@@ -10,22 +10,12 @@ object KeysTest extends TestSuite {
   KeysApp.setupUI()
 
   def tests = TestSuite {
-    'HelloKeys {
-      assert(dom.document.querySelectorAll(s"p.${KeysApp.HelloClass}").length == 1)
+    'HasC4 {
+      assert(dom.document.querySelectorAll("#C4").length == 1)
     }
 
-    'ButtonClick {
-      def messageCount =
-        dom.document.querySelectorAll(s"p.${KeysApp.ClickedClass}").length
-
-      val button = dom.document.querySelector(s"button#${KeysApp.ClickButtonId}").asInstanceOf[html.Button]
-      assert(button != null)
-      assert(messageCount == 0)
-
-      for (c <- 1 to 5) {
-        button.click()
-        assert(messageCount == c)
-      }
+    'HasFSharp4 {
+      assert(dom.document.querySelectorAll("#FSharp4").length == 1)
     }
   }
 
