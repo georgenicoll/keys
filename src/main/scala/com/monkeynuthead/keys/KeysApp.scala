@@ -1,62 +1,80 @@
 package com.monkeynuthead.keys
 
 import org.scalajs.dom
-import org.scalajs.dom.raw.MouseEvent
 
 import scalacss.ScalatagsCss._
 import scalatags.JsDom.all._
+import scalatags.JsDom.svgTags.{svg,polygon}
+import scalatags.JsDom.svgAttrs.{points}
 
 object KeysApp {
 
-  private case class Note(name: String, idPrefix: String, style: Modifier) {
+  private case class Note(name: String, idPrefix: String, style: Modifier, points: (Int) => (String, Int)) {
 
     def id(octave: Integer): String = idPrefix + octave
 
   }
 
   private val Notes = List(
-    Note("C", "C", KeyStyles.whiteNote),
-    Note("C#", "CSharp", KeyStyles.blackNote),
-    Note("D", "D", KeyStyles.whiteNote),
-    Note("Eb", "EFlat", KeyStyles.blackNote),
-    Note("E", "E", KeyStyles.whiteNote),
-    Note("F", "F", KeyStyles.whiteNote),
-    Note("F#", "FSharp", KeyStyles.blackNote),
-    Note("G", "G", KeyStyles.whiteNote),
-    Note("Ab", "AFlat", KeyStyles.blackNote),
-    Note("A", "A", KeyStyles.whiteNote),
-    Note("Bb", "BFlat", KeyStyles.blackNote),
-    Note("B", "B", KeyStyles.whiteNote),
+    Note("C", "C", KeyStyles.WhiteNoteAfterWhite, KeyStyles.WhiteNoteAfterWhitePoints),
+    Note("C#", "CSharp", KeyStyles.BlackNote, KeyStyles.BlackNotePoints),
+    Note("D", "D", KeyStyles.WhiteNoteAfterBlack, KeyStyles.WhiteNoteAfterBlackPoints),
+    Note("Eb", "EFlat", KeyStyles.BlackNote, KeyStyles.BlackNotePoints),
+    Note("E", "E", KeyStyles.WhiteNoteAfterBlack, KeyStyles.WhiteNoteAfterBlackPoints),
+    Note("F", "F", KeyStyles.WhiteNoteAfterWhite, KeyStyles.WhiteNoteAfterWhitePoints),
+    Note("F#", "FSharp", KeyStyles.BlackNote, KeyStyles.BlackNotePoints),
+    Note("G", "G", KeyStyles.WhiteNoteAfterBlack, KeyStyles.WhiteNoteAfterBlackPoints),
+    Note("Ab", "AFlat", KeyStyles.BlackNote, KeyStyles.BlackNotePoints),
+    Note("A", "A", KeyStyles.WhiteNoteAfterBlack, KeyStyles.WhiteNoteAfterBlackPoints),
+    Note("Bb", "BFlat", KeyStyles.BlackNote, KeyStyles.BlackNotePoints),
+    Note("B", "B", KeyStyles.WhiteNoteAfterBlack, KeyStyles.WhiteNoteAfterBlackPoints)
   )
 
-  private def clickNote(octave: Integer, note: Note)(e: MouseEvent): Unit = {
-    dom.window.alert(s"Clicked ${note.name}$octave [#${note.id(octave)}]")
+  private def noteMouseDown(octave: Integer, note: Note)(e: dom.MouseEvent): Unit = {
+    println(s"MouseDown ${note.name}$octave [#${note.id(octave)}]")
   }
 
-  private def createNote(octave: Integer, note: Note): Modifier = {
-    div(
-      note.style,
-      note.name,
+  private def noteMouseUp(octave: Integer, note: Note)(e: dom.MouseEvent): Unit = {
+    println(s"MouseUp ${note.name}$octave [#${note.id(octave)}]")
+  }
+
+  private def noteMouseOut(octave: Integer, note: Note)(e: dom.MouseEvent): Unit = {
+    println(s"MouseOut ${note.name}$octave [#${note.id(octave)}]")
+  }
+
+  private def createNote(offset: Int, octave: Int, note: Note): (Modifier, Int) = {
+    val (calculatedPoints, newOffset) = note.points(offset)
+    val modifier = polygon(
       id := note.id(octave),
-      onclick := clickNote(octave, note) _
+      onmousedown := noteMouseDown(octave, note) _,
+      onmouseup := noteMouseUp(octave, note) _,
+      onmouseout := noteMouseOut(octave, note) _,
+      note.style,
+      points := calculatedPoints,
+      note.name
     )
+    (modifier, newOffset)
   }
 
   private def createKeys(): Seq[Modifier] = {
-    for (
-      octave <- 4 to 4;
+    val octaveNotes = for (
+      octave <- 4 to 5;
       note <- Notes
-    ) yield createNote(octave, note)
+    ) yield (octave, note)
+    octaveNotes.foldLeft((0, Seq.newBuilder[Modifier])) {
+      case ((offset, builder), (octave, note)) =>
+        val (modifier, newOffset) = createNote(offset, octave, note)
+        (newOffset, builder += modifier)
+    }._2.result()
   }
 
   private[keys] def setupUI(): Unit = {
     dom.document.body.appendChild(KeyStyles.renderToHtmlElement.render)
 
-    val keyboard = div(
-      KeyStyles.keyboard,
-      createKeys()
-    ).render
-    dom.document.body.appendChild(keyboard)
+    val keyboard = svg(
+      createKeys():_*,
+    )(KeyStyles.Keyboard)
+    dom.document.body.appendChild(keyboard.render)
   }
 
   def main(args: Array[String]): Unit = {

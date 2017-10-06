@@ -1,7 +1,6 @@
 package com.monkeynuthead.keys
 
 import org.scalajs.dom
-import org.scalajs.dom.html
 import utest._
 
 object KeysTest extends TestSuite {

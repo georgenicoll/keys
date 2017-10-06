@@ -3,30 +3,86 @@ package com.monkeynuthead.keys
 import org.scalajs.dom.raw.HTMLStyleElement
 
 import scalacss.DevDefaults._
-import scalatags.JsDom.TypedTag
+import scala.language.postfixOps
 
 object KeyStyles extends StyleSheet.Inline {
 
+  private val WhiteWidth = 40
+  private val WhiteHeight = 200
+  private val BlackWidth = 20
+  private val BlackHeight = 160
+  private val HalfBlackWidth = BlackWidth / 2 + 1 //plus 1 - used by white shapes
+  private val WhiteWidthMinusHalfBlackWidth = WhiteWidth - HalfBlackWidth //-1 used by white shapes
+
   import dsl._
 
-  val common = mixin(
-    backgroundColor.coral
+  val SvgViewBox = "0,0 1200,400"
+
+  val Keyboard = style(
+    height(200 px),
+    width(600 px),
   )
 
-  val keyboard = style(
-    common
+  val NoteCommon = style(
+    borderStyle.solid,
+    borderColor.darkgray,
+    borderWidth(1 px),
+    float.left
   )
 
-  val whiteNote = style(
-    common,
-    backgroundColor.white,
-    color.black
+  def WhiteNotePoints(offsetX: Int): (String, Int) = {
+    val points = s"$offsetX,0 ${offsetX + WhiteWidth},0 ${offsetX + WhiteWidth},$WhiteHeight $offsetX,$WhiteHeight"
+    (points, offsetX + WhiteWidth)
+  }
+
+  def WhiteNoteAfterWhitePoints(offsetX: Int): (String, Int) = {
+    val points = s"$offsetX,0 " +
+      s"${offsetX + WhiteWidthMinusHalfBlackWidth},0 " +
+      s"${offsetX + WhiteWidthMinusHalfBlackWidth},$BlackHeight " +
+      s"${offsetX + WhiteWidth},$BlackHeight " +
+      s"${offsetX + WhiteWidth},$WhiteHeight " +
+      s"$offsetX,$WhiteHeight"
+    (points, offsetX + WhiteWidth)
+  }
+
+  def WhiteNoteAfterBlackPoints(offsetX: Int): (String, Int) = {
+    val points = s"${offsetX + HalfBlackWidth},0 " +
+      s"${offsetX + HalfBlackWidth},$BlackHeight " +
+      s"$offsetX,$BlackHeight " +
+      s"$offsetX,$WhiteHeight " +
+      s"${offsetX + WhiteWidth},$WhiteHeight " +
+      s"${offsetX + WhiteWidth},0"
+    (points, offsetX + WhiteWidth)
+  }
+
+  def BlackNotePoints(offsetX: Int): (String, Int) = {
+    val points = s"${offsetX - HalfBlackWidth},0 " +
+      s"${offsetX - HalfBlackWidth + BlackWidth},0 " +
+      s"${offsetX - HalfBlackWidth + BlackWidth},$BlackHeight " +
+      s"${offsetX - HalfBlackWidth},$BlackHeight"
+    (points, offsetX)
+  }
+
+  val WhiteNote = style(
+    NoteCommon,
+    svgFill := "white",
+    svgStroke.black,
+    svgStrokeWidth := "2"
   )
 
-  val blackNote = style(
-    common,
-    backgroundColor.black,
-    color.white
+  val WhiteNoteAfterWhite = style(
+    WhiteNote,
+  )
+
+  val WhiteNoteAfterBlack = style(
+    WhiteNote
+  )
+
+  val BlackNote = style(
+    NoteCommon,
+    svgFill := "black",
+    svgStroke.black,
+    svgStrokeWidth := "2"
   )
 
   def renderToHtmlElement: HTMLStyleElement = {
