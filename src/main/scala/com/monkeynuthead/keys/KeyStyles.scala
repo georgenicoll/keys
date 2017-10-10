@@ -65,13 +65,13 @@ object KeyStyles extends StyleSheet.Inline {
 
   val WhiteNote = style(
     NoteCommon,
-    svgFill := "white",
+    svgFill := "ivory",
     svgStroke.black,
     svgStrokeWidth := "2"
   )
 
   val WhiteNoteAfterWhite = style(
-    WhiteNote,
+    WhiteNote
   )
 
   val WhiteNoteAfterBlack = style(
