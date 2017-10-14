@@ -33,27 +33,30 @@ object KeysApp {
 
   private case class Note(id: String, octave: Integer, config: NoteConfig)
 
-  private def noteMouseDown(playnote: String => Unit, note: Note)(e: dom.MouseEvent): Unit = {
+  private def noteMouseDown(playNote: String => Unit, note: Note)(e: dom.MouseEvent): Unit = {
     println(s"MouseDown ${note.id}")
-    playnote(note.id)
+    playNote(note.id)
   }
 
-  private def noteMouseUp(note: Note)(e: dom.MouseEvent): Unit = {
+  private def noteMouseUp(releaseNote: String => Unit, note: Note)(e: dom.MouseEvent): Unit = {
     println(s"MouseUp ${note.id}")
+    releaseNote(note.id)
   }
 
-  private def noteMouseOut(note: Note)(e: dom.MouseEvent): Unit = {
+  private def noteMouseOut(releaseNote: String => Unit, note: Note)(e: dom.MouseEvent): Unit = {
     println(s"MouseOut ${note.id}")
+    releaseNote(note.id)
   }
 
-  private def createNote(playnote: String => Unit, offset: Int, octave: Int, noteConfig: NoteConfig): (Modifier, Int) = {
+  private def createNote(playNote: String => Unit, releaseNote: String => Unit,
+                         offset: Int, octave: Int, noteConfig: NoteConfig): (Modifier, Int) = {
     val (calculatedPoints, newOffset) = noteConfig.points(offset)
     val note = Note(noteConfig.id(octave), octave, noteConfig)
     val modifier = polygon(
       id := note.id,
-      onmousedown := noteMouseDown(playnote, note) _,
-      onmouseup := noteMouseUp(note) _,
-      onmouseout := noteMouseOut(note) _,
+      onmousedown := noteMouseDown(playNote, note) _,
+      onmouseup := noteMouseUp(releaseNote, note) _,
+      onmouseout := noteMouseOut(releaseNote, note) _,
       note.config.style,
       points := calculatedPoints,
       note.id
@@ -61,14 +64,14 @@ object KeysApp {
     (modifier, newOffset)
   }
 
-  private def createKeys(playnote: String => Unit): Seq[Modifier] = {
+  private def createKeys(playNote: String => Unit, releaseNote: String => Unit): Seq[Modifier] = {
     val octaveNotes = for (
       octave <- 4 to 5;
       note <- Notes
     ) yield (octave, note)
     octaveNotes.foldLeft((0, Seq.newBuilder[Modifier])) {
       case ((offset, builder), (octave, note)) =>
-        val (modifier, newOffset) = createNote(playnote, offset, octave, note)
+        val (modifier, newOffset) = createNote(playNote, releaseNote, offset, octave, note)
         (newOffset, builder += modifier)
     }._2.result()
   }
@@ -77,10 +80,18 @@ object KeysApp {
     dom.document.body.appendChild(KeyStyles.renderToHtmlElement.render)
 
     val instrument = new Tone.Synth().toMaster()
-    val playnote = (note: String) => instrument.triggerAttackRelease(note, "16n")
+    var playingNotes: Set[String] = Set.empty
+    val playNote = (note: String) => {
+      playingNotes = playingNotes + note
+      instrument.triggerAttack(note)
+    }
+    val releaseNote = (note: String) => if (playingNotes.contains(note)) {
+      playingNotes = playingNotes - note
+      instrument.triggerRelease()
+    }
 
     val keyboard = svg(
-      createKeys(playnote):_*,
+      createKeys(playNote, releaseNote):_*,
     )(KeyStyles.Keyboard)
     dom.document.body.appendChild(keyboard.render)
   }
